@@ -1,0 +1,87 @@
+# Ignore Visual Studio temporary files, build results, and
+# user-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Auto-generated files
+Generated\
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+# Uncomment if necessary
+# !packages/build/
+# !packages/repositories.config
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# VS Code directories
+.vscode/
+.vscode-test/
+
+# Rider directories
+.idea/
+*.sln.iml
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Entity Framework
+*.edmx
+*.edmx.diagram
+*.edmx.sql
+
+# SQL Server files
+*.mdf
+*.ldf
+
+# IIS
+[Ii][Nn][Ee][Tt][Pp][Uu][Bb]/
+[Ii][Nn][Ee][Tt][Pp][Uu][Bb][Ll][Oo][Gg]/
+
+# Web server
+.vs/
+.vscode/
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Blazor specific
+wwwroot/css/
+wwwroot/js/
+wwwroot/lib/

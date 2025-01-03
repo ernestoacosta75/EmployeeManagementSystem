@@ -68,7 +68,7 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
 
         try
         {
-            _dbSet.Remove(entityToDelete);
+            if (entityToDelete != null) _dbSet.Remove(entityToDelete);
             await _appDbContext.SaveChangesAsync();
         }
         catch (Exception ex)

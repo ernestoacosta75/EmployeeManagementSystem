@@ -2,7 +2,7 @@
 
 namespace EmployeeManagementSystem.Application.Services.UserAccount
 {
-    public class UserAccount : IUserAccount
+    public class UserAccountService : IUserAccountService
     {
         public async Task<GeneralResponseDto> CreateAsync(RegisterDto user)
         {

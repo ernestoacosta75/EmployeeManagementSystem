@@ -10,8 +10,4 @@
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
 		<ProjectReference Include="..\EmployeeManagementSystem.Shared\EmployeeManagementSystem.Shared.csproj" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Services\" />
-	</ItemGroup>
 </Project>

@@ -1,6 +1,8 @@
 
 using EmployeeManagementSystem.Infrastructure.DependencyResolver;
 using EmployeeManagementSystem.Application.Services.DependencyResolver;
+using EmployeeManagementSystem.Shared.Helpers;
+
 namespace EmployeeManagementSystem.Api;
 
 public class Program
@@ -24,6 +26,8 @@ public class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+
+        builder.Services.Configure<JwtSection>(builder.Configuration.GetSection("JwtSection"));
 
         var app = builder.Build();
 

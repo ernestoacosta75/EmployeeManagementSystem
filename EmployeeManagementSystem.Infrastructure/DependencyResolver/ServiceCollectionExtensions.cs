@@ -1,6 +1,8 @@
 ﻿using EmployeeManagementSystem.Domain.Services.DependencyResolver;
 using EmployeeManagementSystem.Domain.Services.Repositories;
+using EmployeeManagementSystem.Domain.Services.UnitOfWorks;
 using EmployeeManagementSystem.Infrastructure.Repositories;
+using EmployeeManagementSystem.Infrastructure.UnitOfWorks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,6 +13,7 @@ public static class ServiceCollectionExtensions
     public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDatabaseContext(configuration);
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));        
     }
 }

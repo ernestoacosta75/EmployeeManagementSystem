@@ -1,4 +1,5 @@
-﻿using EmployeeManagementSystem.Domain.Services.Repositories;
+﻿using System.Linq.Expressions;
+using EmployeeManagementSystem.Domain.Services.Repositories;
 using EmployeeManagementSystem.Domain.Services.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,6 +21,11 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
         return await _dbSet.FindAsync(id);
     }
 
+    public async Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> predicate)
+    {
+        return await _dbSet.FirstOrDefaultAsync(predicate);
+    }
+
     public IQueryable<TEntity> GetAll()
     {
         return _dbSet.AsQueryable();
@@ -29,18 +35,9 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     {
         ArgumentNullException.ThrowIfNull(entity);
 
-        try
-        {
-            var addedEntity = await _dbSet.AddAsync(entity);
-            await _appDbContext.SaveChangesAsync();
+        var addedEntity = await _dbSet.AddAsync(entity);
 
-            return addedEntity.Entity;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error adding entity: {ex.Message}");
-            throw;
-        }
+        return addedEntity.Entity;
     }
 
     public async Task<TEntity?> Update(int? id, TEntity entity)
@@ -54,10 +51,9 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
             return null;
         }
 
-        _appDbContext.Entry(existingEntity).CurrentValues.SetValues(entity);
-        await _appDbContext.SaveChangesAsync();
+        var entityUpdated = _dbSet.Update(entity);
 
-        return existingEntity;
+        return entityUpdated.Entity ?? null;
     }
 
     public async Task Delete(int id)

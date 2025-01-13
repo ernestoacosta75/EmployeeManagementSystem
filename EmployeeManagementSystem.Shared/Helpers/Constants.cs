@@ -2,6 +2,7 @@
 {
     public static class Constants
     {
-        public static readonly string Admin = "Admin";
+        public static string Admin { get;  }= "Admin";
+        public static string User { get;  }= "User";
     }
 }

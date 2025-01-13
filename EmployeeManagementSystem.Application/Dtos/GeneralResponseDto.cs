@@ -1,4 +1,4 @@
 ﻿namespace EmployeeManagementSystem.Application.Dtos
 {
-    public record GeneralResponseDto(bool flag, string Message = null);
+    public record GeneralResponseDto(bool Flag, string Message = null!);
 }

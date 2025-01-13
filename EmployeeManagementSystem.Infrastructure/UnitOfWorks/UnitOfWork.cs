@@ -8,12 +8,11 @@ namespace EmployeeManagementSystem.Infrastructure.UnitOfWorks
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly DbContext _dbContext;
+        private AppDbContext _dbContext => _dbContextFactory.CreateDbContext();
         private readonly IDbContextFactory<AppDbContext> _dbContextFactory;
 
-        public UnitOfWork(DbContext dbContext, IDbContextFactory<AppDbContext> dbContextFactory)
+        public UnitOfWork(IDbContextFactory<AppDbContext> dbContextFactory)
         {
-            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _dbContextFactory = dbContextFactory ?? throw new ArgumentNullException(nameof(dbContextFactory));
         }
 

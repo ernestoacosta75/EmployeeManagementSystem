@@ -1,5 +1,4 @@
 ﻿using EmployeeManagementSystem.Domain.Services.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeManagementSystem.Domain.Services.UnitOfWorks
 {

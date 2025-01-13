@@ -1,4 +1,5 @@
-﻿using EmployeeManagementSystem.Application.Dtos;
+﻿using System.Diagnostics;
+using EmployeeManagementSystem.Application.Dtos;
 using EmployeeManagementSystem.Domain.Entities;
 using EmployeeManagementSystem.Domain.Services.Repositories;
 using EmployeeManagementSystem.Domain.Services.UnitOfWorks;
@@ -29,11 +30,14 @@ namespace EmployeeManagementSystem.Application.Services.UserAccount
         {
             ArgumentNullException.ThrowIfNull(user);
 
-            var checkUser = await FindUserByEmail(user.Email);
-
-            if (checkUser != null)
+            if (user.Email != null)
             {
-                return new GeneralResponseDto(false, "User registered already");
+                var checkUser = await FindUserByEmail(user.Email);
+
+                if (checkUser is not null)
+                {
+                    return new GeneralResponseDto(false, "User registered already");
+                }
             }
 
             try
@@ -58,16 +62,58 @@ namespace EmployeeManagementSystem.Application.Services.UserAccount
                             Name = Constants.Admin
                         });
 
-                    await _userRoleRepository.Add(new UserRole
+                    if (applicationUser != null && adminRole != null)
                     {
-                        RoleId = adminRole.Id,
-                        UserId = applicationUser.Id
-                    });
+                        await _userRoleRepository.Add(new UserRole
+                        {
+                            RoleId = adminRole.Id,
+                            UserId = applicationUser.Id
+                        });
+                    }
+
+                    _unitOfWork.Commit();
+
+                    return new GeneralResponseDto(true, "Account created");
+                }
+
+                var checkUserRole = await _systemRoleRepository
+                    .FindAsync(_ => _.Name!.Equals(Constants.User));
+
+                if (checkUserRole is null)
+                {
+                    var response = await _systemRoleRepository.Add(
+                        new SystemRole
+                        {
+                            Name = Constants.Admin
+                        });
+
+                    if (applicationUser != null && response != null)
+                    {
+                        await _userRoleRepository.Add(
+                            new UserRole
+                            {
+                                RoleId = response.Id,
+                                UserId = applicationUser.Id
+                            });
+                    }
+                }
+                else
+                {
+                    if (applicationUser != null)
+                    {
+                        await _userRoleRepository.Add(
+                            new UserRole
+                            {
+                                RoleId = checkUserRole.Id,
+                                UserId = applicationUser.Id
+                            });
+                    }
                 }
 
                 _unitOfWork.Commit();
 
                 return new GeneralResponseDto(true, "Account created");
+
             }
             catch (Exception ex)
             {

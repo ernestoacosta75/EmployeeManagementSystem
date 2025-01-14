@@ -10,9 +10,15 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     private readonly AppDbContext _appDbContext;
     private readonly DbSet<TEntity> _dbSet;
 
-    public Repository(IDbContextFactory<AppDbContext> dbContextFactory)
+    //public Repository(IDbContextFactory<AppDbContext> dbContextFactory)
+    //{
+    //    _appDbContext = dbContextFactory.CreateDbContext();
+    //    _dbSet = _appDbContext.Set<TEntity>();
+    //}
+
+    public Repository(AppDbContext appDbContext)
     {
-        _appDbContext = dbContextFactory.CreateDbContext();
+        _appDbContext = appDbContext;
         _dbSet = _appDbContext.Set<TEntity>();
     }
 

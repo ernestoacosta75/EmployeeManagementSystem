@@ -8,12 +8,13 @@ namespace EmployeeManagementSystem.Infrastructure.UnitOfWorks
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private AppDbContext _dbContext => _dbContextFactory.CreateDbContext();
+        private readonly AppDbContext _dbContext;
         private readonly IDbContextFactory<AppDbContext> _dbContextFactory;
 
         public UnitOfWork(IDbContextFactory<AppDbContext> dbContextFactory)
         {
             _dbContextFactory = dbContextFactory ?? throw new ArgumentNullException(nameof(dbContextFactory));
+            _dbContext = _dbContextFactory.CreateDbContext();
         }
 
         public void Commit()
@@ -34,7 +35,7 @@ namespace EmployeeManagementSystem.Infrastructure.UnitOfWorks
 
         public IRepository<T> Repository<T>() where T : class
         {
-            return new Repository<T>(_dbContextFactory);
+            return new Repository<T>(_dbContext);
         }
     }
 }

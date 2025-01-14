@@ -166,13 +166,21 @@ namespace EmployeeManagementSystem.Application.Services.UserAccount
             return new LoginResponseDto(true, "Login successfully", jwtToken, refreshToken);
         }
 
+        public async Task<LoginResponseDto> RefreshTokenAsync(RefreshTokenDto token)
+        {
+            
+        }
+
         private async Task<ApplicationUser?> FindUserByEmail(string email) =>
             await _userAccountRepository
                 .FindAsync(_ => _.Email != null && _.Email.ToLower() == email.ToLower());
 
+        private async Task<UserRole?> FindUserRole(Guid userId) => await _userRoleRepository.FindAsync(_ => _.UserId == userId);
+        private async Task<SystemRole?> FindRoleName(Guid roleId) => await _systemRoleRepository.FindAsync(_ => _.Id == roleId);
+
         private string GenerateToken(ApplicationUser user, string role)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.Value.Key));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.Value.Key!));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             
             // Claims in JWT Token are used to store key data (ex.: username, timezone, roles, etc)

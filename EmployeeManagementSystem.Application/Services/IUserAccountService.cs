@@ -6,5 +6,6 @@ namespace EmployeeManagementSystem.Application.Services
     {
         Task<GeneralResponseDto> CreateAsync(RegisterDto? user);
         Task<LoginResponseDto> SignInAsync(LoginDto? user);
+        Task<LoginResponseDto> RefreshTokenAsync(RefreshTokenDto token);
     }
 }

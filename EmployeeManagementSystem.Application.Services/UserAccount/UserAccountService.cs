@@ -84,7 +84,7 @@ namespace EmployeeManagementSystem.Application.Services.UserAccount
                     var response = await _systemRoleRepository.Add(
                         new SystemRole
                         {
-                            Name = Constants.Admin
+                            Name = Constants.User
                         });
 
                     if (applicationUser != null && response != null)

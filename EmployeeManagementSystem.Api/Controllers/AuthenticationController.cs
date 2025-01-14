@@ -27,5 +27,18 @@ namespace EmployeeManagementSystem.Api.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> CreateAsync(LoginDto? user)
+        {
+            if (user == null)
+            {
+                return BadRequest("Model is empty");
+            }
+
+            var result = await _userAccountService.SignInAsync(user);
+
+            return Ok(result);
+        }
     }
 }

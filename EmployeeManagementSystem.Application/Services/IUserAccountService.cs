@@ -4,7 +4,7 @@ namespace EmployeeManagementSystem.Application.Services
 {
     public interface IUserAccountService
     {
-        Task<GeneralResponseDto> CreateAsync(RegisterDto user);
-        Task<LoginResponseDto> SignInAsync(LoginDto user);
+        Task<GeneralResponseDto> CreateAsync(RegisterDto? user);
+        Task<LoginResponseDto> SignInAsync(LoginDto? user);
     }
 }

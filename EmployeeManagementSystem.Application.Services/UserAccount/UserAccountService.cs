@@ -1,10 +1,14 @@
-﻿using System.Diagnostics;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using EmployeeManagementSystem.Application.Dtos;
 using EmployeeManagementSystem.Domain.Entities;
 using EmployeeManagementSystem.Domain.Services.Repositories;
 using EmployeeManagementSystem.Domain.Services.UnitOfWorks;
 using EmployeeManagementSystem.Shared.Helpers;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Constants = EmployeeManagementSystem.Shared.Helpers.Constants;
 
 namespace EmployeeManagementSystem.Application.Services.UserAccount
@@ -26,7 +30,7 @@ namespace EmployeeManagementSystem.Application.Services.UserAccount
             _systemRoleRepository = _unitOfWork.Repository<SystemRole>();
             _userRoleRepository = _unitOfWork.Repository<UserRole>();
         }
-        public async Task<GeneralResponseDto> CreateAsync(RegisterDto user)
+        public async Task<GeneralResponseDto> CreateAsync(RegisterDto? user)
         {
             ArgumentNullException.ThrowIfNull(user);
 
@@ -50,7 +54,7 @@ namespace EmployeeManagementSystem.Application.Services.UserAccount
                         Password = BCrypt.Net.BCrypt.HashPassword(user.Password)
                     });
 
-                // check, create and assign role
+                // check, create and assign roles
                 var checkAdminRole = await _systemRoleRepository
                     .FindAsync(_ => _.Name!.Equals(Constants.Admin));
 
@@ -122,14 +126,77 @@ namespace EmployeeManagementSystem.Application.Services.UserAccount
             }
         }
 
-        public async Task<LoginResponseDto> SignInAsync(LoginDto user)
+        public async Task<LoginResponseDto> SignInAsync(LoginDto? user)
         {
-            throw new NotImplementedException();
+            if (user is null)
+            {
+                return new LoginResponseDto(false, "Model is empty");
+            }
+
+            var applicationUser = await FindUserByEmail(user.Email!);
+
+            if (applicationUser is null)
+            {
+                return new LoginResponseDto(false, "User not found");
+            }
+
+            // Verifying password
+            if (!BCrypt.Net.BCrypt.Verify(user.Password, applicationUser.Password)) 
+            {
+                return new LoginResponseDto(false, "Email/Password not valid");
+            }
+
+            var userRole = await _userRoleRepository.FindAsync(_ => _.UserId == applicationUser.Id);
+
+            if (userRole is null)
+            {
+                return new LoginResponseDto(false, "User role not found");
+            }
+
+            var roleName = await _systemRoleRepository.FindAsync(_ => _.Id == userRole.RoleId);
+
+            if (roleName is null)
+            {
+                return new LoginResponseDto(false, "User role not found");
+            }
+
+            var jwtToken = GenerateToken(applicationUser, roleName.Name!);
+            var refreshToken = GenerateRefreshToken();
+
+            return new LoginResponseDto(true, "Login successfully", jwtToken, refreshToken);
         }
 
-        private async Task<ApplicationUser> FindUserByEmail(string email) =>
-        await _userAccountRepository
-            .FindAsync(_ => _.Email != null && _.Email.ToLower() == email.ToLower());
-        
+        private async Task<ApplicationUser?> FindUserByEmail(string email) =>
+            await _userAccountRepository
+                .FindAsync(_ => _.Email != null && _.Email.ToLower() == email.ToLower());
+
+        private string GenerateToken(ApplicationUser user, string role)
+        {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.Value.Key));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            
+            // Claims in JWT Token are used to store key data (ex.: username, timezone, roles, etc)
+            // in the token payload, besides the IssuedAt, which is added by default.
+            var userClaims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Fullname),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, role!)
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: _config.Value.Issuer,
+                audience: _config.Value.Audience,
+                claims: userClaims,
+                expires: DateTime.Now.AddDays(1),
+                signingCredentials: credentials);
+
+            return new JwtSecurityTokenHandler()
+                .WriteToken(token);
+        }
+
+        private static string GenerateRefreshToken() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
     }
 }

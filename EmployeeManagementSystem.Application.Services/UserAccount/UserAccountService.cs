@@ -40,10 +40,7 @@ namespace EmployeeManagementSystem.Application.Services.UserAccount
             {
                 var checkUser = await FindUserByEmail(user.Email);
 
-                if (checkUser is not null)
-                {
-                    return new GeneralResponseDto(false, "User registered already");
-                }
+                if (checkUser is not null) return new GeneralResponseDto(false, "User registered already");
             }
 
             try
@@ -223,6 +220,8 @@ namespace EmployeeManagementSystem.Application.Services.UserAccount
         private async Task<UserRole?> FindUserRole(Guid userId) => await _userRoleRepository.FindAsync(_ => _.UserId == userId);
         private async Task<SystemRole?> FindRoleName(Guid roleId) => await _systemRoleRepository.FindAsync(_ => _.Id == roleId);
 
+        private static string GenerateRefreshToken() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
         private string GenerateToken(ApplicationUser user, string role)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.Value.Key!));
@@ -248,8 +247,5 @@ namespace EmployeeManagementSystem.Application.Services.UserAccount
             return new JwtSecurityTokenHandler()
                 .WriteToken(token);
         }
-
-        private static string GenerateRefreshToken() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-
     }
 }

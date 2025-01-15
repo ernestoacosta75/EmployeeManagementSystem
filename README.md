@@ -1,6 +1,6 @@
 # EF Core - Creating migrations
 
-Add-Migration -o <dest_folder>
+Add-Migration -o <dest_folder> ==> Ex.: Add-Migration -o DatabaseContext\Migrations
 
 Type the name of the migration.
 

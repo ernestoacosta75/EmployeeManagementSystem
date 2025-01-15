@@ -18,10 +18,7 @@ namespace EmployeeManagementSystem.Api.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> CreateAsync(RegisterDto? user)
         {
-            if (user == null)
-            {
-                return BadRequest("Model is empty");
-            }
+            if (user == null) return BadRequest("Model is empty");
 
             var result = await _userAccountService.CreateAsync(user);
 
@@ -29,14 +26,21 @@ namespace EmployeeManagementSystem.Api.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> CreateAsync(LoginDto? user)
+        public async Task<IActionResult> SignInAsync(LoginDto? user)
         {
-            if (user == null)
-            {
-                return BadRequest("Model is empty");
-            }
+            if (user == null) return BadRequest("Model is empty");
 
             var result = await _userAccountService.SignInAsync(user);
+
+            return Ok(result);
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshTokenAsync(RefreshTokenDto? token)
+        {
+            if (token == null) return BadRequest("Model is empty");
+
+            var result = await _userAccountService.RefreshTokenAsync(token);
 
             return Ok(result);
         }

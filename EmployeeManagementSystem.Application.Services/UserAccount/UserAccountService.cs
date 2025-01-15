@@ -20,6 +20,7 @@ namespace EmployeeManagementSystem.Application.Services.UserAccount
         private readonly IRepository<ApplicationUser> _userAccountRepository;
         private readonly IRepository<SystemRole> _systemRoleRepository;
         private readonly IRepository<UserRole> _userRoleRepository;
+        private readonly IRepository<RefreshTokenInfo> _refreshTokenInfoRepository;
 
         public UserAccountService(IUnitOfWork unitOfWork,
             IOptions<JwtSection> config)
@@ -29,6 +30,7 @@ namespace EmployeeManagementSystem.Application.Services.UserAccount
             _userAccountRepository = _unitOfWork.Repository<ApplicationUser>();
             _systemRoleRepository = _unitOfWork.Repository<SystemRole>();
             _userRoleRepository = _unitOfWork.Repository<UserRole>();
+            _refreshTokenInfoRepository = _unitOfWork.Repository<RefreshTokenInfo>();
         }
         public async Task<GeneralResponseDto> CreateAsync(RegisterDto? user)
         {
@@ -128,47 +130,90 @@ namespace EmployeeManagementSystem.Application.Services.UserAccount
 
         public async Task<LoginResponseDto> SignInAsync(LoginDto? user)
         {
-            if (user is null)
-            {
-                return new LoginResponseDto(false, "Model is empty");
-            }
+            if (user is null) return new LoginResponseDto(false, "Model is empty");
 
             var applicationUser = await FindUserByEmail(user.Email!);
 
-            if (applicationUser is null)
-            {
-                return new LoginResponseDto(false, "User not found");
-            }
+            if (applicationUser is null) return new LoginResponseDto(false, "User not found");
 
             // Verifying password
-            if (!BCrypt.Net.BCrypt.Verify(user.Password, applicationUser.Password)) 
-            {
-                return new LoginResponseDto(false, "Email/Password not valid");
-            }
+            if (!BCrypt.Net.BCrypt.Verify(user.Password, applicationUser.Password)) return new LoginResponseDto(false, "Email/Password not valid");
 
-            var userRole = await _userRoleRepository.FindAsync(_ => _.UserId == applicationUser.Id);
+            var userRole = await FindUserRole(applicationUser.Id);
 
-            if (userRole is null)
-            {
-                return new LoginResponseDto(false, "User role not found");
-            }
+            if (userRole is null) return new LoginResponseDto(false, "User role not found");
 
-            var roleName = await _systemRoleRepository.FindAsync(_ => _.Id == userRole.RoleId);
+            var roleName = await FindRoleName(userRole.RoleId);
 
-            if (roleName is null)
-            {
-                return new LoginResponseDto(false, "User role not found");
-            }
+            if (roleName is null) return new LoginResponseDto(false, "User role not found");
 
             var jwtToken = GenerateToken(applicationUser, roleName.Name!);
             var refreshToken = GenerateRefreshToken();
 
+            try
+            {
+                // Saving the refresh token to the database
+                var userFounded = await _refreshTokenInfoRepository.FindAsync(_ => _.UserId == applicationUser.Id);
+
+                if (userFounded is not null)
+                {
+                    userFounded!.Token = refreshToken;
+                    _unitOfWork.Commit();
+                }
+                else
+                {
+                    await _refreshTokenInfoRepository.Add(new RefreshTokenInfo
+                    {
+                        Token = refreshToken,
+                        UserId = applicationUser.Id
+                    });
+
+                    _unitOfWork.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                _unitOfWork.Rollback();
+                throw;
+            }
+            
             return new LoginResponseDto(true, "Login successfully", jwtToken, refreshToken);
         }
 
-        public async Task<LoginResponseDto> RefreshTokenAsync(RefreshTokenDto token)
+        public async Task<LoginResponseDto> RefreshTokenAsync(RefreshTokenDto? token)
         {
+            if (token is null) return new LoginResponseDto(false, "Model is empty");
+
+            var tokenFounded = await _refreshTokenInfoRepository.FindAsync(_ => _.Token!.Equals(token.Token));
+
+            if(tokenFounded is null) return new LoginResponseDto(false, "Refresh token is required");
+
+            // Getting user details
+            var user = await _userAccountRepository.FindAsync(_ => _.Id == tokenFounded.UserId);
+
+            if (user is null) return new LoginResponseDto(false, "Refresh token could not be generated because user not found");
+
+            var userRole = await FindUserRole(user.Id);
+            var roleName = await FindRoleName(userRole!.RoleId);
+            var jwtToken = GenerateToken(user, roleName!.Name!);
+            var refreshToken = GenerateRefreshToken();
+
+            var refreshTokenOfUser = await _refreshTokenInfoRepository.FindAsync(_ => _.UserId == user.Id);
+
+            if(refreshTokenOfUser is null) return new LoginResponseDto(false, "Refresh token could not be generated because user not found");
+
+            try
+            {
+                refreshTokenOfUser.Token = refreshToken;
+                _unitOfWork.Commit();
+            }
+            catch (Exception ex)
+            {
+                _unitOfWork.Rollback();
+                throw;
+            }
             
+            return new LoginResponseDto(true, "Token refreshed successfully", jwtToken, refreshToken);
         }
 
         private async Task<ApplicationUser?> FindUserByEmail(string email) =>

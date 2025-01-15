@@ -26,10 +26,7 @@ namespace EmployeeManagementSystem.Infrastructure.UnitOfWorks
         {
             foreach (var entry in _dbContext.ChangeTracker.Entries())
             {
-                if (entry.State == EntityState.Added)
-                {
-                    entry.State = EntityState.Detached;
-                }
+                if (entry.State == EntityState.Added) entry.State = EntityState.Detached;
             }
         }
 

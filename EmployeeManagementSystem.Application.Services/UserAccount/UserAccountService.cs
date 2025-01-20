@@ -213,6 +213,11 @@ namespace EmployeeManagementSystem.Application.Services.UserAccount
             return new LoginResponseDto(true, "Token refreshed successfully", jwtToken, refreshToken);
         }
 
+        public async Task<WeatherForecast[]> GetWeatherForecast()
+        {
+            return null;
+        }
+
         private async Task<ApplicationUser?> FindUserByEmail(string email) =>
             await _userAccountRepository
                 .FindAsync(_ => _.Email != null && _.Email.ToLower() == email.ToLower());

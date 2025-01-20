@@ -1,3 +1,6 @@
+using Blazored.LocalStorage;
+using EmployeeManagementSystem.Client.Services;
+using EmployeeManagementSystem.Client.Services.Storage;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -13,6 +16,11 @@ public class Program
         builder.RootComponents.Add<HeadOutlet>("head::after");
 
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+
+        builder.Services.AddBlazoredLocalStorage();
+        builder.Services.AddSingleton(typeof(LocalStorageService));
+        builder.Services.AddSingleton(typeof(GetHttpClient));
+        //builder.Services.AddScoped<IUserAccountService, UserAccountClientService>();
 
         await builder.Build().RunAsync();
     }

@@ -12,6 +12,6 @@ public static class ServiceCollectionExtensions
         //services.AddMemoryCache();
         services.AddAutoMapper(typeof(AutoMapperProfiles));
         services.AddTransient<IUserAccountService, UserAccountService>();
-        services.AddScoped(typeof(EntityDtoMapper<,>));
+        services.AddSingleton(typeof(EntityDtoMapper<,>));
     }
 }

@@ -18,6 +18,10 @@ public class Program
             .Build();
 
         // Add services to the container.
+        builder.Services
+            .AddRazorComponents()
+            .AddInteractiveServerComponents()
+            .AddInteractiveWebAssemblyComponents();
 
         builder.Services.AddInfrastructure(configuration);
         builder.Services.AddApplication();
@@ -41,7 +45,6 @@ public class Program
         app.UseHttpsRedirection();
 
         app.UseAuthorization();
-
 
         app.MapControllers();
 

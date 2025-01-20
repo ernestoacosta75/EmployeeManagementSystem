@@ -1,4 +1,4 @@
-namespace EmployeeManagementSystem.Api
+namespace EmployeeManagementSystem.Application.Dtos
 {
     public class WeatherForecast
     {
